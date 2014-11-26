@@ -13,6 +13,15 @@ int main (int argc, const char *argv[]) {
   int buffer_value;
   char buffer [max_int_size];
 
+  // check the parameters
+  if(argc < 2) {
+    printf("\n");
+    printf("Usage:\n");
+    printf("  ./sequential <input_matrix>\n");
+    printf("\n");
+    exit(0);
+  }
+
   // open the file & get the matrix dimensions
   file = fopen(argv[1], "rt");
   fgets(buffer, max_int_size, file);
