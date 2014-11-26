@@ -17,7 +17,7 @@ int main (int argc, const char *argv[]) {
   if(argc < 2) {
     printf("\n");
     printf("Usage:\n");
-    printf("  ./sequential <input_matrix>\n");
+    printf("  ./sequential.o <input_matrix>\n");
     printf("\n");
     exit(0);
   }
