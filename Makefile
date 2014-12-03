@@ -6,4 +6,4 @@ seq:
 	./sequential/sequential.o input.txt output.txt
 
 bcast:
-	./parallel-broadcast/parallel-bcast.o input.txt output.txt
+	mpirun -np 4 parallel-broadcast/parallel-bcast.o input.txt output.txt

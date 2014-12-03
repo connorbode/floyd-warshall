@@ -7,26 +7,38 @@ FILE *file;
 
 int main (int argc, const char *argv[]) {
 
-  int max_int_size = 20;
+  int max_int_size = 20;        
   int matrix_dimensions;
   int * matrix;
   int i, j, c;
   int buffer_value;
   char buffer [max_int_size];
+  int MASTER = 0;
+  int rank;
+  int IS_MASTER = 0;
+
+  // init MPI
+  MPI_Init(NULL, NULL);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  IS_MASTER = rank == MASTER;
 
   // print banner
-  printf("\n");
-  printf("-----------------------------------------------\n");
-  printf("   Parallel Floyd-Warshall using Broadcasts.\n");
-  printf("      by Connor Bode.\n");
-  printf("-----------------------------------------------\n\n");
+  if (IS_MASTER) {
+    printf("\n");
+    printf("-----------------------------------------------\n");
+    printf("   Parallel Floyd-Warshall using Broadcasts.\n");
+    printf("      by Connor Bode.\n");
+    printf("-----------------------------------------------\n\n");
+  }
 
   // check the parameters
   if(argc < 3) {
-    printf("\n");
-    printf("Usage:\n");
-    printf("  ./sequential.o <input_file> <output_file>\n");
-    printf("\n");
+    if (IS_MASTER) {
+      printf("\n");
+      printf("Usage:\n");
+      printf("  ./sequential.o <input_file> <output_file>\n");
+      printf("\n");
+    }
     exit(0);
   }
 
@@ -60,22 +72,21 @@ int main (int argc, const char *argv[]) {
   }
 
   // print input matrix
-  printf("INPUT MATRIX\n\n");
-  for (i = 0; i < matrix_dimensions; i += 1) {
-    for (j = 0; j < matrix_dimensions; j += 1) {
-      printf("%d ", matrix[i * matrix_dimensions + j]);
+  if (IS_MASTER) {
+    printf("INPUT MATRIX\n\n");
+    for (i = 0; i < matrix_dimensions; i += 1) {
+      for (j = 0; j < matrix_dimensions; j += 1) {
+        printf("%d ", matrix[i * matrix_dimensions + j]);
+      }
+      printf("\n");
     }
     printf("\n");
   }
 
-  printf("\n");
-
   // close the input file
   fclose(file);
 
-
   // run the algorithm
-  MPI_Init(NULL, NULL);
 
   MPI_Finalize();
 }
