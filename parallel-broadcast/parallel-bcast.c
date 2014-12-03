@@ -1,25 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <mpi.h>
 
 FILE *file;
 
 int main (int argc, const char *argv[]) {
 
+  //-- INPUT COLLECTION VARS
   int max_int_size = 20;        
   int matrix_dimensions;
   int * matrix;
   int i, j, c;
   int buffer_value;
   char buffer [max_int_size];
+
+  //-- MPI VARS
   int MASTER = 0;
-  int rank;
+  int rank, size;
   int IS_MASTER = 0;
+
+  //-- PARALLEL ALGO VARS
+  int grid_dimensions;
+  int grid_rank_i;
+  int grid_rank_j;
 
   // init MPI
   MPI_Init(NULL, NULL);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
   IS_MASTER = rank == MASTER;
 
   // print banner
@@ -38,6 +48,14 @@ int main (int argc, const char *argv[]) {
       printf("Usage:\n");
       printf("  ./sequential.o <input_file> <output_file>\n");
       printf("\n");
+    }
+    exit(0);
+  }
+
+  // check comm size is square rootable
+  if (floor(sqrt(size)) - sqrt(size) != 0.0) {
+    if (IS_MASTER) {
+      printf("Number of processes must be a perfect square.\n");
     }
     exit(0);
   }
@@ -86,7 +104,14 @@ int main (int argc, const char *argv[]) {
   // close the input file
   fclose(file);
 
-  // run the algorithm
+  // partition matrix
+  grid_dimensions = sqrt(size);
+  grid_rank_i = rank / grid_dimensions;
+  grid_rank_j = rank % grid_dimensions;
 
+  printf("PROCESS %d is grid rank %d, %d\n", rank, grid_rank_i, grid_rank_j);
+
+
+  // finalize MPI
   MPI_Finalize();
 }
