@@ -25,6 +25,10 @@ int main (int argc, const char *argv[]) {
   int grid_dimensions;
   int grid_rank_i;
   int grid_rank_j;
+  int bound_i_lower;
+  int bound_i_higher;
+  int bound_j_lower;
+  int bound_j_higher;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -108,8 +112,14 @@ int main (int argc, const char *argv[]) {
   grid_dimensions = sqrt(size);
   grid_rank_i = rank / grid_dimensions;
   grid_rank_j = rank % grid_dimensions;
+  bound_i_lower = ((grid_rank_i) * matrix_dimensions) / grid_dimensions;
+  bound_j_lower = ((grid_rank_j) * matrix_dimensions) / grid_dimensions;
+  bound_i_higher = ((grid_rank_i + 1) * matrix_dimensions) / grid_dimensions - 1;
+  bound_j_higher = ((grid_rank_j + 1) * matrix_dimensions) / grid_dimensions - 1;
 
-  printf("PROCESS %d is grid rank %d, %d\n", rank, grid_rank_i, grid_rank_j);
+  printf("Process %d has grid rank (%d, %d) with upper left corner (%d, %d) and lower right corner (%d, %d)\n"
+         , rank, grid_rank_i, grid_rank_j, bound_i_lower, bound_j_lower, bound_i_higher, bound_j_higher);
+
 
 
   // finalize MPI
