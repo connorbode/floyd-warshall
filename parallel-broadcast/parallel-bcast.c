@@ -21,7 +21,7 @@ int main (int argc, const char *argv[]) {
   int rank, size;
   int IS_MASTER = 0;
 
-  //-- PARALLEL ALGO VARS
+  //-- PARTITIONING GRID VARS
   int grid_dimensions;
   int grid_rank_i;
   int grid_rank_j;
@@ -29,6 +29,8 @@ int main (int argc, const char *argv[]) {
   int bound_i_higher;
   int bound_j_lower;
   int bound_j_higher;
+  int *subblock;
+  int subblock_dimensions;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -68,7 +70,7 @@ int main (int argc, const char *argv[]) {
   file = fopen(argv[1], "rt");
   fgets(buffer, max_int_size, file);
   matrix_dimensions = atoi(buffer);
-  matrix = (int*) malloc (matrix_dimensions * matrix_dimensions);
+  matrix = (int*) malloc (matrix_dimensions * matrix_dimensions * sizeof(int));
   memset(buffer, 0, sizeof(buffer));
 
   // read in matrix from file
@@ -114,11 +116,15 @@ int main (int argc, const char *argv[]) {
   grid_rank_j = rank % grid_dimensions;
   bound_i_lower = ((grid_rank_i) * matrix_dimensions) / grid_dimensions;
   bound_j_lower = ((grid_rank_j) * matrix_dimensions) / grid_dimensions;
-  bound_i_higher = ((grid_rank_i + 1) * matrix_dimensions) / grid_dimensions - 1;
-  bound_j_higher = ((grid_rank_j + 1) * matrix_dimensions) / grid_dimensions - 1;
-
-  printf("Process %d has grid rank (%d, %d) with upper left corner (%d, %d) and lower right corner (%d, %d)\n"
-         , rank, grid_rank_i, grid_rank_j, bound_i_lower, bound_j_lower, bound_i_higher, bound_j_higher);
+  bound_i_higher = ((grid_rank_i + 1) * matrix_dimensions) / grid_dimensions;
+  bound_j_higher = ((grid_rank_j + 1) * matrix_dimensions) / grid_dimensions;
+  subblock_dimensions = matrix_dimensions / grid_dimensions;
+  subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
+  for (i = bound_i_lower; i < bound_i_higher; i += 1) {
+    for (j = bound_j_lower; j < bound_j_higher; j += 1) {
+      subblock[(i - bound_i_lower) * subblock_dimensions + (j - bound_j_lower)] = matrix[i * matrix_dimensions + j];
+    }
+  }
 
 
 
