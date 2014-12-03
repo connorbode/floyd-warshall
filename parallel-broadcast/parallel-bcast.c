@@ -31,6 +31,8 @@ int main (int argc, const char *argv[]) {
   int bound_j_higher;
   int *subblock;
   int subblock_dimensions;
+  MPI_Comm comm_col;
+  MPI_Comm comm_row;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -126,6 +128,9 @@ int main (int argc, const char *argv[]) {
     }
   }
 
+  // build communicators
+  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_i, rank, &comm_row);
+  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_j, rank, &comm_col);
 
 
   // finalize MPI
