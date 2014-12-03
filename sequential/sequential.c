@@ -14,6 +14,14 @@ int main (int argc, const char *argv[]) {
   int buffer_value;
   char buffer [max_int_size];
 
+  // display banner
+  printf("\n");
+  printf("----------------------------------\n");
+  printf("   Sequential Floyd-Warshall.\n");
+  printf("      by Connor Bode\n");
+  printf("----------------------------------\n");
+  printf("\n");
+
   // check the parameters
   if(argc < 3) {
     printf("\n");
@@ -52,8 +60,8 @@ int main (int argc, const char *argv[]) {
     }
   }
 
-  // printf("%d\n", matrix_dimensions);
-
+  // print input matrix
+  printf("INPUT MATRIX \n\n");
   for (i = 0; i < matrix_dimensions; i += 1) {
     for (j = 0; j < matrix_dimensions; j += 1) {
       printf("%d ", matrix[i * matrix_dimensions + j]);
@@ -61,7 +69,7 @@ int main (int argc, const char *argv[]) {
     printf("\n");
   }
 
-  printf("\n\n");
+  printf("\n");
 
   // close the input file
   fclose(file);
@@ -81,6 +89,8 @@ int main (int argc, const char *argv[]) {
     matrix = next_matrix;
   }
 
+  // print output matrix
+  printf("OUTPUT MATRIX \n\n");
   for (i = 0; i < matrix_dimensions; i += 1) {
     for (j = 0; j < matrix_dimensions; j += 1) {
       printf("%d ", next_matrix[i * matrix_dimensions + j]);
