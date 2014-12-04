@@ -12,7 +12,7 @@ int main (int argc, const char *argv[]) {
   int max_int_size = 20;        
   int matrix_dimensions;
   int * matrix;
-  int i, j, c;
+  int i, j, k, c;
   int buffer_value;
   char buffer [max_int_size];
 
@@ -33,6 +33,11 @@ int main (int argc, const char *argv[]) {
   int subblock_dimensions;
   MPI_Comm comm_col;
   MPI_Comm comm_row;
+
+  //-- FLOYD_WARSHALL VARS
+  int kth_bcast_rank;
+  int kth_row_cell;
+  int kth_col_cell;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -129,8 +134,17 @@ int main (int argc, const char *argv[]) {
   }
 
   // build communicators
-  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_i, rank, &comm_row);
-  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_j, rank, &comm_col);
+  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_i, grid_rank_j, &comm_col);
+  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_j, grid_rank_i, &comm_row);
+
+
+  // ITERATE! 
+  for (k = 0; k < 1; k += 1) {
+
+    // broadcasts
+
+
+  }
 
 
   // finalize MPI
