@@ -36,8 +36,8 @@ int main (int argc, const char *argv[]) {
 
   //-- FLOYD_WARSHALL VARS
   int kth_bcast_rank;
-  int kth_row_cell;
-  int kth_col_cell;
+  int *kth_row;
+  int *kth_col;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -139,10 +139,45 @@ int main (int argc, const char *argv[]) {
 
 
   // ITERATE! 
-  for (k = 0; k < 1; k += 1) {
+  kth_row = (int*) malloc(sizeof(int) * subblock_dimensions);
+  kth_col = (int*) malloc(sizeof(int) * subblock_dimensions);
+  for (k = 0; k < 2; k += 1) {
 
-    // broadcasts
+    // COLLECT KTH ROWS
+    kth_bcast_rank = k / subblock_dimensions;
+    if (grid_rank_i == kth_bcast_rank) {
+      i = k - bound_i_lower;
+      for (j = 0; j < subblock_dimensions; j++) {
+        kth_row[j] = subblock[i * subblock_dimensions + j];
+      }
 
+      printf("ITERATION %d\n", k);
+      printf("PROCESS %d\n", rank);
+      printf("SUBBLOCK ROW: ");
+      for (i = 0; i < subblock_dimensions; i++) {
+        printf("%d ", kth_row[i]);
+      }
+      printf("\n\n");
+    }
+
+    // COLLECT KTH COLS
+    if (grid_rank_j == kth_bcast_rank) {
+      j = k - bound_j_lower;
+      for (i = 0; i < subblock_dimensions; i++) {
+        kth_col[i] = subblock[i * subblock_dimensions + j];
+      }
+
+      printf("ITERATION %d\n", k);
+      printf("PROCESS %d\n", rank);
+      printf("SUBBLOCK COL: ");
+      for (i = 0; i < subblock_dimensions; i++) {
+        printf("%d ", kth_col[i]);
+      }
+      printf("\n\n");
+    }
+
+    // BROADCAST!!!!
+    
 
   }
 
