@@ -134,14 +134,14 @@ int main (int argc, const char *argv[]) {
   }
 
   // build communicators
-  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_i, grid_rank_j, &comm_col);
-  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_j, grid_rank_i, &comm_row);
+  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_j, grid_rank_i, &comm_col);
+  MPI_Comm_split(MPI_COMM_WORLD, grid_rank_i, grid_rank_j, &comm_row);
 
 
   // ITERATE! 
   kth_row = (int*) malloc(sizeof(int) * subblock_dimensions);
   kth_col = (int*) malloc(sizeof(int) * subblock_dimensions);
-  for (k = 0; k < 2; k += 1) {
+  for (k = 0; k < matrix_dimensions; k += 1) {
 
     // COLLECT KTH ROWS
     kth_bcast_rank = k / subblock_dimensions;
@@ -150,14 +150,6 @@ int main (int argc, const char *argv[]) {
       for (j = 0; j < subblock_dimensions; j++) {
         kth_row[j] = subblock[i * subblock_dimensions + j];
       }
-
-      printf("ITERATION %d\n", k);
-      printf("PROCESS %d\n", rank);
-      printf("SUBBLOCK ROW: ");
-      for (i = 0; i < subblock_dimensions; i++) {
-        printf("%d ", kth_row[i]);
-      }
-      printf("\n\n");
     }
 
     // COLLECT KTH COLS
@@ -166,19 +158,18 @@ int main (int argc, const char *argv[]) {
       for (i = 0; i < subblock_dimensions; i++) {
         kth_col[i] = subblock[i * subblock_dimensions + j];
       }
-
-      printf("ITERATION %d\n", k);
-      printf("PROCESS %d\n", rank);
-      printf("SUBBLOCK COL: ");
-      for (i = 0; i < subblock_dimensions; i++) {
-        printf("%d ", kth_col[i]);
-      }
-      printf("\n\n");
     }
 
     // BROADCAST!!!!
-    
+    MPI_Bcast(kth_row, subblock_dimensions, MPI_INT, kth_bcast_rank, comm_col);
+    MPI_Bcast(kth_col, subblock_dimensions, MPI_INT, kth_bcast_rank, comm_row);
 
+    if (rank == 3) {
+      printf("ITERATION %d\n", k);
+      printf("bcast_rank: %d\n", kth_bcast_rank);
+      printf("Item (0, %d): %d\n", k, kth_col[7]);
+      printf("Item (%d, 0): %d\n\n", k, kth_row[7]);
+    }
   }
 
 
