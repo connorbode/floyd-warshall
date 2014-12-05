@@ -45,6 +45,8 @@ int main (int argc, const char *argv[]) {
   int *out_of_order_subblocks;
   int *gather_counts;
   int *gather_offsets;
+  int written;
+  int bump;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -193,7 +195,40 @@ int main (int argc, const char *argv[]) {
     }
   }
   MPI_Gatherv(subblock, subblock_dimensions * subblock_dimensions, MPI_INT, out_of_order_subblocks, gather_counts, gather_offsets, MPI_INT, MASTER, MPI_COMM_WORLD);
-  
+
+  // Reorder the subblocks
+  if (IS_MASTER) {
+    i = 0;
+    j = 0;
+    k = 0;
+    bump = 0;
+    for (written = 0; written < matrix_dimensions * matrix_dimensions; written += 1) {
+      matrix[written] = out_of_order_subblocks[k * matrix_dimensions * subblock_dimensions + j * subblock_dimensions * subblock_dimensions + i + bump];
+      i += 1;
+      if (i % subblock_dimensions == 0) {
+        i = 0;
+        j += 1;
+        if (j % grid_dimensions == 0) {
+          j = 0;
+          bump += subblock_dimensions;
+          if (bump == subblock_dimensions * subblock_dimensions) {
+            bump = 0;
+            k += 1;
+          }
+        }
+      }
+    }
+  }
+
+  if (IS_MASTER) {
+    for (i = 0; i < matrix_dimensions; i += 1) {
+      for (j = 0; j < matrix_dimensions; j += 1) {
+        printf("%d ", matrix[i * matrix_dimensions + j]);
+      }
+      printf("\n");
+    }
+    printf("\n");
+  }
 
   // finalize 
   free(matrix);
