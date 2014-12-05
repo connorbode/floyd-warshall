@@ -85,11 +85,7 @@ int main (int argc, const char *argv[]) {
 
   // read in matrix from file
   while((c = fgetc(file)) != EOF) {
-
-    // new line in file
     if (c == '\n' || c == '\r') { } 
-
-    // finished buffering cell value
     else if (c == ' ') {
       buffer_value = atoi(buffer);
       memset(buffer, 0, sizeof(buffer));
@@ -97,8 +93,6 @@ int main (int argc, const char *argv[]) {
       j = 0;
       i += 1;
     } 
-
-    // add character to cell value buffer
     else {
       buffer[j] = c;
       j += 1;
