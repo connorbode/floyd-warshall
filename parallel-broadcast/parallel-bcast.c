@@ -40,7 +40,11 @@ int main (int argc, const char *argv[]) {
   int *kth_col;
   int curr_cost;
   int alt_cost;
+
+  //-- GATHERING THE FINAL MATRIX
   int *out_of_order_subblocks;
+  int *gather_counts;
+  int *gather_offsets;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -124,7 +128,6 @@ int main (int argc, const char *argv[]) {
   bound_j_higher = ((grid_rank_j + 1) * matrix_dimensions) / grid_dimensions;
   subblock_dimensions = matrix_dimensions / grid_dimensions;
   subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
-  next_subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
   for (i = bound_i_lower; i < bound_i_higher; i += 1) {
     for (j = bound_j_lower; j < bound_j_higher; j += 1) {
       subblock[(i - bound_i_lower) * subblock_dimensions + (j - bound_j_lower)] = matrix[i * matrix_dimensions + j];
@@ -140,6 +143,8 @@ int main (int argc, const char *argv[]) {
   kth_row = (int*) malloc(sizeof(int) * subblock_dimensions);
   kth_col = (int*) malloc(sizeof(int) * subblock_dimensions);
   for (k = 0; k < matrix_dimensions; k += 1) {
+
+    next_subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
 
     // COLLECT KTH ROWS
     kth_bcast_rank = k / subblock_dimensions;
@@ -173,14 +178,26 @@ int main (int argc, const char *argv[]) {
 
     free(subblock);
     subblock = next_subblock;
-    next_subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
   }
-
+  free(kth_row);
+  free(kth_col);
 
   // GATHER
-  out_of_order_subblocks = (int*) malloc(sizeof(int) * matrix_dimensions * matrix_dimensions);
-  MPI_Gather(subblock, subblock_dimensions * subblock_dimensions, MPI_INT, out_of_order_subblocks, matrix_dimensions * matrix_dimensions, MPI_INT, MASTER, MPI_COMM_WORLD);
+  if (IS_MASTER) {
+    out_of_order_subblocks = (int*) malloc(sizeof(int) * size * subblock_dimensions * subblock_dimensions);
+    gather_counts = (int*) malloc(sizeof(int) * size);
+    gather_offsets = (int*) malloc(sizeof(int) * size);
+    for (i = 0; i < size; i += 1) {
+      gather_counts[i] = subblock_dimensions * subblock_dimensions;
+      gather_offsets[i] = gather_counts[i] * i;
+    }
+  }
+  MPI_Gatherv(subblock, subblock_dimensions * subblock_dimensions, MPI_INT, out_of_order_subblocks, gather_counts, gather_offsets, MPI_INT, MASTER, MPI_COMM_WORLD);
+  
 
-  // finalize MPI
+  // finalize 
+  free(matrix);
+  free(subblock);
+  if (IS_MASTER) { free(out_of_order_subblocks); }
   MPI_Finalize();
 }
