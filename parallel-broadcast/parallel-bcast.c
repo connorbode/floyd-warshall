@@ -68,7 +68,7 @@ int main (int argc, const char *argv[]) {
     if (IS_MASTER) {
       printf("\n");
       printf("Usage:\n");
-      printf("  ./sequential.o <input_file> <output_file>\n");
+      printf("  ./parallel.o <input_file> <output_file>\n");
       printf("\n");
     }
     exit(0);
@@ -220,7 +220,9 @@ int main (int argc, const char *argv[]) {
     }
   }
 
+  // print output 
   if (IS_MASTER) {
+    printf("OUTPUT MATRIX\n\n");
     for (i = 0; i < matrix_dimensions; i += 1) {
       for (j = 0; j < matrix_dimensions; j += 1) {
         printf("%d ", matrix[i * matrix_dimensions + j]);
@@ -228,6 +230,15 @@ int main (int argc, const char *argv[]) {
       printf("\n");
     }
     printf("\n");
+  }
+
+  // print output to file
+  file = fopen(argv[2], "w");
+  for (i = 0; i < matrix_dimensions; i += 1) {
+    for (j = 0; j < matrix_dimensions; j += 1) {
+      fprintf(file, "%d ", matrix[i * matrix_dimensions + j]);
+    }
+    fprintf(file, "\n");
   }
 
   // finalize 
