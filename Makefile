@@ -3,7 +3,7 @@ all:
 	$(MAKE) -C parallel-broadcast
 
 seq:
-	./sequential/sequential.o input.txt output.txt
+	./sequential/sequential.o input/input.txt output/sequential.txt
 
 bcast:
-	mpirun -np 4 parallel-broadcast/parallel-bcast.o input.txt output.txt
+	mpirun -np 4 parallel-broadcast/parallel-bcast.o input/input.txt output/parallel-broadcast.txt

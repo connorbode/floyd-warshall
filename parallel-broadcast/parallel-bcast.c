@@ -233,12 +233,14 @@ int main (int argc, const char *argv[]) {
   }
 
   // print output to file
-  file = fopen(argv[2], "w");
-  for (i = 0; i < matrix_dimensions; i += 1) {
-    for (j = 0; j < matrix_dimensions; j += 1) {
-      fprintf(file, "%d ", matrix[i * matrix_dimensions + j]);
+  if (IS_MASTER) {
+    file = fopen(argv[2], "w");
+    for (i = 0; i < matrix_dimensions; i += 1) {
+      for (j = 0; j < matrix_dimensions; j += 1) {
+        fprintf(file, "%d ", matrix[i * matrix_dimensions + j]);
+      }
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
   }
 
   // finalize 
