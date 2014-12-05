@@ -29,7 +29,7 @@ int main (int argc, const char *argv[]) {
   int bound_i_higher;
   int bound_j_lower;
   int bound_j_higher;
-  int *subblock;
+  int *subblock, *next_subblock;
   int subblock_dimensions;
   MPI_Comm comm_col;
   MPI_Comm comm_row;
@@ -38,6 +38,9 @@ int main (int argc, const char *argv[]) {
   int kth_bcast_rank;
   int *kth_row;
   int *kth_col;
+  int curr_cost;
+  int alt_cost;
+  int *out_of_order_subblocks;
 
   // init MPI
   MPI_Init(NULL, NULL);
@@ -127,6 +130,7 @@ int main (int argc, const char *argv[]) {
   bound_j_higher = ((grid_rank_j + 1) * matrix_dimensions) / grid_dimensions;
   subblock_dimensions = matrix_dimensions / grid_dimensions;
   subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
+  next_subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
   for (i = bound_i_lower; i < bound_i_higher; i += 1) {
     for (j = bound_j_lower; j < bound_j_higher; j += 1) {
       subblock[(i - bound_i_lower) * subblock_dimensions + (j - bound_j_lower)] = matrix[i * matrix_dimensions + j];
@@ -164,14 +168,24 @@ int main (int argc, const char *argv[]) {
     MPI_Bcast(kth_row, subblock_dimensions, MPI_INT, kth_bcast_rank, comm_col);
     MPI_Bcast(kth_col, subblock_dimensions, MPI_INT, kth_bcast_rank, comm_row);
 
-    if (rank == 3) {
-      printf("ITERATION %d\n", k);
-      printf("bcast_rank: %d\n", kth_bcast_rank);
-      printf("Item (0, %d): %d\n", k, kth_col[7]);
-      printf("Item (%d, 0): %d\n\n", k, kth_row[7]);
+    // Build next subblock
+    for (i = 0; i < subblock_dimensions; i += 1) {
+      for (j = 0; j < subblock_dimensions; j += 1) {
+        curr_cost = subblock[i * subblock_dimensions + j];
+        alt_cost = kth_row[j] + kth_col[i];
+        next_subblock[i * subblock_dimensions + j] = curr_cost < alt_cost ? curr_cost : alt_cost;
+      }
     }
+
+    free(subblock);
+    subblock = next_subblock;
+    next_subblock = (int*) malloc(sizeof(int) * subblock_dimensions * subblock_dimensions);
   }
 
+
+  // GATHER
+  out_of_order_subblocks = (int*) malloc(sizeof(int) * matrix_dimensions * matrix_dimensions);
+  MPI_Gather(subblock, subblock_dimensions * subblock_dimensions, MPI_INT, out_of_order_subblocks, matrix_dimensions * matrix_dimensions, MPI_INT, MASTER, MPI_COMM_WORLD);
 
   // finalize MPI
   MPI_Finalize();
