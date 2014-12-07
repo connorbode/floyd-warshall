@@ -11,3 +11,5 @@ bcast:
 
 pipe:
 	mpirun -np 4 parallel-pipeline/parallel-pipeline.o input/input.txt output/parallel-pipeline.txt
+
+piper: all pipe
